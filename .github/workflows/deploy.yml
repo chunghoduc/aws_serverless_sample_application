@@ -1,0 +1,43 @@
+name: Deploy Serverless Application
+
+on:
+  push:
+    branches:
+      - main  # Trigger deployment on pushes to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Install AWS SAM CLI
+      run: |
+        pip install aws-sam-cli
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Build SAM application
+      run: |
+        sam build
+
+    - name: Package SAM application
+      run: |
+        sam package --s3-bucket ${{ secrets.S3_BUCKET_NAME }} --output-template-file packaged.yaml
+
+    - name: Deploy SAM application
+      run: |
+        sam deploy --template-file packaged.yaml --stack-name your-stack-name --capabilities CAPABILITY_IAM --no-fail-on-empty-changeset
+
+    - name: Clean up
+      run: |
+        rm -f packaged.yaml
