@@ -46,7 +46,7 @@ jobs:
 
     - name: Deploy SAM application
       run: |
-        sam deploy --template-file packaged.yaml --stack-name your-stack-name --capabilities CAPABILITY_IAM --no-fail-on-empty-changeset
+        sam deploy --template-file packaged.yaml --stack-name image-management-serverless-app --capabilities CAPABILITY_IAM --no-fail-on-empty-changeset
 
     - name: Clean up
       run: |
