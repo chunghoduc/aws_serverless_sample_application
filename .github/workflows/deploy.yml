@@ -8,6 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: develop
 
     steps:
     - name: Checkout code
@@ -32,7 +33,7 @@ jobs:
 
     - name: Package SAM application
       run: |
-        sam package --s3-bucket ${{ secrets.S3_BUCKET_NAME }} --output-template-file packaged.yaml
+        sam package --s3-bucket ${{ secrets.S3_BUCKET_NAME }} --region ${{ secrets.S3_REGION}} --output-template-file packaged.yaml
 
     - name: Deploy SAM application
       run: |
