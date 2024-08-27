@@ -18,7 +18,7 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref ImageBucket
       Events:
-        Api:
+        ListImagesApi:
           Type: Api
           Properties:
             Path: /images
@@ -52,7 +52,7 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref ImageBucket
       Events:
-        Api:
+        RenameImageApi:
           Type: Api
           Properties:
             Path: /images/rename
@@ -62,3 +62,60 @@ Resources:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: awsserverlesstestappimages
+
+  ApiGatewayRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ApiGatewayRolePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource:
+                  - !GetAtt ListImagesFunction.Arn
+                  - !GetAtt RenameImageFunction.Arn
+                  - !GetAtt ThumbnailGeneratorFunction.Arn
+
+  ApiGateway:
+    Type: 'AWS::Serverless::Api'
+    Properties:
+      Name: ImageManagementApi
+      StageName: prod
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: Image Management API
+          version: '1.0'
+        paths:
+          /images:
+            get:
+              x-amazon-apigateway-integration:
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ListImagesFunction.Arn}/invocations
+                httpMethod: POST
+                type: aws_proxy
+              produces:
+                - application/json
+          /images/rename:
+            post:
+              x-amazon-apigateway-integration:
+                uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RenameImageFunction.Arn}/invocations
+                httpMethod: POST
+                type: aws_proxy
+              produces:
+                - application/json
+      DefinitionUri: swagger.yaml
+
+Outputs:
+  ApiUrl:
+    Description: "URL of the API Gateway"
+    Value: !Sub 'https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod'
