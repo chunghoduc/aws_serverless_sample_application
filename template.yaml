@@ -61,4 +61,4 @@ Resources:
   ImageBucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      BucketName: your-image-bucket-name
+      BucketName: awsserverlesstestappimages
