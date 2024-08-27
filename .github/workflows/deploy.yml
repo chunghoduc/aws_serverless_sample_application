@@ -31,6 +31,15 @@ jobs:
       run: |
         sam build
 
+    - name: Configure AWS credentials
+      run: |
+        aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws configure set region ${{ secrets.AWS_REGION }}
+
+    - name: Validate AWS CLI configuration
+      run: aws sts get-caller-identity
+
     - name: Package SAM application
       run: |
         sam package --s3-bucket ${{ secrets.S3_BUCKET_NAME }} --region ${{ secrets.S3_REGION}} --output-template-file packaged.yaml
